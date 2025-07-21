@@ -1,0 +1,29 @@
+{
+  "short_name": "Cliniks IA",
+  "name": "Cliniks IA - Portal de Inteligência Artificial",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#7f00fa",
+  "background_color": "#ffffff",
+  "description": "Plataforma de IA para clínicas estéticas"
+}
