@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste PWA - Cliniks IA</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #7f00fa, #fb0082);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .test-item {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .pass { background: #4CAF50; }
+        .fail { background: #f44336; }
+        .warning { background: #ff9800; }
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        #results {
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste PWA - Cliniks IA</h1>
+        <p>Esta página testa as funcionalidades PWA do Cliniks IA</p>
+        
+        <div id="tests"></div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button onclick="runAllTests()">🔄 Executar Todos os Testes</button>
+            <button onclick="testInstallPrompt()">📱 Testar Instalação</button>
+            <button onclick="testServiceWorker()">⚙️ Testar Service Worker</button>
+            <button onclick="testOffline()">🌐 Testar Modo Offline</button>
+        </div>
+        
+        <div id="results"></div>
+        
+        <div style="margin-top: 30px; font-size: 14px; opacity: 0.8;">
+            <h3>📋 Checklist PWA:</h3>
+            <ul>
+                <li>✅ Manifest.json configurado</li>
+                <li>✅ Service Worker ativo</li>
+                <li>✅ Ícones em múltiplos tamanhos</li>
+                <li>✅ Meta tags para iOS/Android</li>
+                <li>✅ Suporte offline básico</li>
+                <li>✅ Prompt de instalação personalizado</li>
+                <li>✅ Otimizações para mobile</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const log = (message) => {
+            const results = document.getElementById('results');
+            results.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            console.log(message);
+        };
+
+        const createTestItem = (name, status, details = '') => {
+            const statusClass = status === 'PASS' ? 'pass' : status === 'FAIL' ? 'fail' : 'warning';
+            return `
+                <div class="test-item">
+                    <div>
+                        <strong>${name}</strong>
+                        ${details ? `<br><small>${details}</small>` : ''}
+                    </div>
+                    <span class="status ${statusClass}">${status}</span>
+                </div>
+            `;
+        };
+
+        const runAllTests = async () => {
+            const testsDiv = document.getElementById('tests');
+            testsDiv.innerHTML = '<h3>🔍 Executando Testes...</h3>';
+            
+            let results = '';
+            
+            // Teste 1: Manifest
+            try {
+                const response = await fetch('/manifest.json');
+                const manifest = await response.json();
+                results += createTestItem(
+                    'Manifest.json',
+                    'PASS',
+                    `Nome: ${manifest.name}, Ícones: ${manifest.icons.length}`
+                );
+            } catch (e) {
+                results += createTestItem('Manifest.json', 'FAIL', 'Não encontrado ou inválido');
+            }
+            
+            // Teste 2: Service Worker
+            if ('serviceWorker' in navigator) {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    results += createTestItem(
+                        'Service Worker',
+                        'PASS',
+                        `Escopo: ${registration.scope}`
+                    );
+                } else {
+                    results += createTestItem('Service Worker', 'FAIL', 'Não registrado');
+                }
+            } else {
+                results += createTestItem('Service Worker', 'FAIL', 'Não suportado');
+            }
+            
+            // Teste 3: Instalação
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                               window.navigator.standalone ||
+                               document.referrer.includes('android-app://');
+            
+            results += createTestItem(
+                'Modo PWA',
+                isStandalone ? 'PASS' : 'WARNING',
+                isStandalone ? 'Executando como PWA' : 'Executando no navegador'
+            );
+            
+            // Teste 4: Plataforma
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/.test(navigator.userAgent);
+            const platform = isIOS ? 'iOS' : isAndroid ? 'Android' : 'Desktop';
+            
+            results += createTestItem(
+                'Plataforma',
+                'PASS',
+                `Detectado: ${platform}`
+            );
+            
+            // Teste 5: Recursos PWA
+            const hasBeforeInstallPrompt = 'onbeforeinstallprompt' in window;
+            results += createTestItem(
+                'Prompt de Instalação',
+                hasBeforeInstallPrompt ? 'PASS' : 'WARNING',
+                hasBeforeInstallPrompt ? 'Suportado' : 'Não suportado (normal no iOS)'
+            );
+            
+            testsDiv.innerHTML = '<h3>📊 Resultados dos Testes:</h3>' + results;
+            log('Todos os testes executados');
+        };
+
+        const testInstallPrompt = () => {
+            log('Testando prompt de instalação...');
+            window.dispatchEvent(new Event('beforeinstallprompt'));
+        };
+
+        const testServiceWorker = async () => {
+            log('Testando Service Worker...');
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        log(`Service Worker ativo: ${registration.active ? 'Sim' : 'Não'}`);
+                        log(`Escopo: ${registration.scope}`);
+                    } else {
+                        log('Service Worker não registrado');
+                    }
+                } catch (e) {
+                    log(`Erro ao verificar Service Worker: ${e.message}`);
+                }
+            } else {
+                log('Service Worker não suportado');
+            }
+        };
+
+        const testOffline = async () => {
+            log('Testando modo offline...');
+            try {
+                const cache = await caches.open('cliniks-ai-cache-v3');
+                const keys = await cache.keys();
+                log(`Cache contém ${keys.length} recursos`);
+                keys.slice(0, 5).forEach(key => log(`- ${key.url}`));
+                if (keys.length > 5) log(`... e mais ${keys.length - 5} recursos`);
+            } catch (e) {
+                log(`Erro ao verificar cache: ${e.message}`);
+            }
+        };
+
+        // Executar testes automaticamente ao carregar
+        window.addEventListener('load', () => {
+            log('Página de teste PWA carregada');
+            runAllTests();
+        });
+    </script>
+</body>
+</html>
